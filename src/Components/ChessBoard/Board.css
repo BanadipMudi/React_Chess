@@ -1,0 +1,19 @@
+/* #board{
+    display: grid;
+    grid-template-columns: repeat(8,5rem);
+    grid-template-rows: repeat(8,5rem);
+    width: 40rem;
+    height: 40rem;
+    background-color: rgb(232, 58, 58);
+}
+.tile{
+    height: 5rem;
+    width: 5rem;
+}
+.white-tile{
+    background-color:  rgb(250, 255, 163);aliceblue;
+}
+
+.dark-tile{
+    background-color: rgb(26, 27, 28);
+} */

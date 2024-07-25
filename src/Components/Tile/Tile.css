@@ -1,0 +1,39 @@
+#board{
+    display: grid;
+    place-content: center;
+    grid-template-columns: repeat(8,100px);
+    grid-template-rows: repeat(8,100px);
+    width: 800px;
+    height: 800px;
+    background-color: rgb(232, 58, 58);
+    /* background-image: url("king_b.png"); */
+}
+.tile{
+    height: 100px;
+    width: 100px;
+    display: grid;
+    place-content: center;
+}
+.chess-piece{
+    width: 80px;
+    height: 80px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 80px;
+}
+
+.chess-piece:hover{
+    cursor: grab;
+}
+
+.chess-piece:active{
+    cursor: grabbing;
+}
+
+.white-tile{
+    background-color:  rgb(242, 243, 222);
+}
+
+.dark-tile{
+    background-color: rgb(212, 196, 80);
+}
