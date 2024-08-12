@@ -1,19 +1,49 @@
-/* #board{
+#board{
     display: grid;
-    grid-template-columns: repeat(8,5rem);
-    grid-template-rows: repeat(8,5rem);
-    width: 40rem;
-    height: 40rem;
+    place-content: center;
+    grid-template-columns: repeat(8,100px);
+    grid-template-rows: repeat(8,100px);
+    width: 800px;
+    height: 800px;
     background-color: rgb(232, 58, 58);
-}
-.tile{
-    height: 5rem;
-    width: 5rem;
-}
-.white-tile{
-    background-color:  rgb(250, 255, 163);aliceblue;
+    /* background-image: url("king_b.png"); */
 }
 
-.dark-tile{
-    background-color: rgb(26, 27, 28);
-} */
+#pawn-promotion >.modal-body{
+    position: absolute;
+    /* top: calc(50%-150px); */
+    /* top:33%; */
+    /* left: calc(50%-400px); */
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    height: 300px;
+    width: 800px;
+    background-color: rgba(78, 7, 147, 0.6);
+}
+
+#pawn-promotion > .modal-body >img{
+    height: 100px;
+    padding: 20px;
+    border-radius: 50%;
+}
+
+#pawn-promotion >.modal-body >img:hover{
+    background-color: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+}
+
+#pawn-promotion.hidden{
+    display: none;
+}
+
+#pawn-promotion{
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    top: 0px;
+    left:0px;
+    bottom: 0px;
+    right: 0px;
+}

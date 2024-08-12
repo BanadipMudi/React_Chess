@@ -3,70 +3,16 @@ import './Board.css';
 import Tile from '../Tile/Tile.tsx';
 import { useRef } from 'react';
 import Referee from '../../Refree/referee.ts';
-const vertical=['1','2','3','4','5','6','7','8'];
-const horizontal=['a','b','c','d','e','f','g','h'];
-export enum PieceType{
-  PAWN,
-  BISHOP,
-  KNIGHT,
-  ROOK,
-  QUEEN,
-  KING
-}
-
-export enum TeamType{
-  opponent,
-  own
-}
-export interface Piece{
-  image:string;
-  x:number;
-  y:number;
-  type:PieceType;
-  team:TeamType;
-}
-
-
-const piece: Piece[]=[];
-for(let i=0;i<8;i++){
-  piece.push({image:"assets/images/pawn_b.png",x:i,y:6,type:PieceType.PAWN,team:TeamType.opponent});
-}
-
-for(let i=0;i<8;i++){
-  piece.push({image:"assets/images/pawn_w.png",x:i,y:1,type:PieceType.PAWN,team:TeamType.own});
-}
-
-piece.push({image:"assets/images/rook_b.png",x:0,y:7,type:PieceType.ROOK,team:TeamType.opponent});
-piece.push({image:"assets/images/rook_b.png",x:7,y:7,type:PieceType.ROOK,team:TeamType.opponent});
-
-piece.push({image:"assets/images/rook_w.png",x:0,y:0,type:PieceType.ROOK,team:TeamType.own});
-piece.push({image:"assets/images/rook_w.png",x:7,y:0,type:PieceType.ROOK,team:TeamType.own});
-
-piece.push({image:"assets/images/knight_b.png",x:1,y:7,type:PieceType.KNIGHT,team:TeamType.opponent});
-piece.push({image:"assets/images/knight_b.png",x:6,y:7,type:PieceType.KNIGHT,team:TeamType.opponent});
-
-piece.push({image:"assets/images/knight_w.png",x:1,y:0,type:PieceType.KNIGHT,team:TeamType.own});
-piece.push({image:"assets/images/knight_w.png",x:6,y:0,type:PieceType.KNIGHT,team:TeamType.own});
-
-piece.push({image:"../../assets/images/bishop_b.png",x:2,y:7,type:PieceType.BISHOP,team:TeamType.opponent});
-piece.push({image:"assets/images/bishop_b.png",x:5,y:7,type:PieceType.BISHOP,team:TeamType.opponent});
-
-piece.push({image:"assets/images/bishop_w.png",x:2,y:0,type:PieceType.BISHOP,team:TeamType.own});
-piece.push({image:"assets/images/bishop_w.png",x:5,y:0,type:PieceType.BISHOP,team:TeamType.own});
-
-piece.push({image:"assets/images/king_b.png",x:4,y:7,type:PieceType.KING,team:TeamType.opponent});
-piece.push({image:"assets/images/queen_b.png",x:3,y:7,type:PieceType.QUEEN,team:TeamType.opponent});
-
-piece.push({image:"assets/images/king_w.png",x:4,y:0,type:PieceType.KING,team:TeamType.own});
-piece.push({image:"assets/images/queen_w.png",x:3,y:0,type:PieceType.QUEEN,team:TeamType.own});
-
+import {vertical,horizontal,boardWidth,cellWidth, Position} from '../../Constant.ts';
+import {PieceType,TeamType,Piece,piece,samePosition} from '../../Constant.ts';
 
 export default function Board() {
   const [pieces,setPieces]=useState<Piece[]>(piece);
-  const [gridX,setGridX]=useState(0);
-  const [gridY,setGridY]=useState(0);
-  const [hght,sethght]=useState<number>();
-  const [wdth,setwdth]=useState<number>();
+  // const [gridX,setGridX]=useState(0);
+  // const [gridY,setGridY]=useState(0);
+  const [grabPosition,setgrabPosition,]=useState<Position>({x:0,y:0});
+  const [promotionPawn,setPromotionPawn]=useState<Piece>();
+  const modalRef=useRef<HTMLDivElement>(null);
   const [activeElement,setActiveElemet]=useState<HTMLElement | null>(null);
   const chessBoardRef=useRef<HTMLDivElement>(null);
   const referee=new Referee();
@@ -76,11 +22,12 @@ export default function Board() {
     const chessbrd=chessBoardRef.current;
 
       if(el.classList.contains("chess-piece") && chessbrd){
-        setGridX(Math.floor((e.clientX-chessbrd.offsetLeft)/100));
-        setGridY(Math.abs(Math.ceil((e.clientY-chessbrd.offsetTop-800)/100)));
+       const grabX=Math.floor((e.clientX-chessbrd.offsetLeft)/cellWidth);
+       const grabY=Math.abs(Math.ceil((e.clientY-chessbrd.offsetTop-boardWidth)/cellWidth));
+       setgrabPosition({x:grabX,y:grabY});
 
-        const x=e.clientX -50;
-        const y=e.clientY -50;
+        const x=e.clientX -cellWidth/2;
+        const y=e.clientY -cellWidth/2;
         el.style.position="absolute";
         el.style.left=`${x}px`;
         el.style.top=`${y}px`;
@@ -90,7 +37,7 @@ export default function Board() {
   
   //move a piece
   function movePiece(e:React.MouseEvent){
-    const el=e.target as HTMLElement;
+    // const el=e.target as HTMLElement;
     const chessbrd=chessBoardRef.current;
     if(activeElement && chessbrd){
       // console.log(chessBoardRef);
@@ -129,22 +76,63 @@ export default function Board() {
   function dropPiece(e:React.MouseEvent){
     const chessbrd=chessBoardRef.current;
     if(activeElement && chessbrd){
-      const x=Math.floor((e.clientX-chessbrd.offsetLeft)/100);
-      const y=Math.abs(Math.ceil((e.clientY-chessbrd.offsetTop-800)/100));
-      // console.log(x,y);
-      const currentPiece=pieces.find(p=>p.x===gridX && p.y===gridY);
-      const attackedPiece=pieces.find(p=>p.x===x && p.y===y);
+      const x=Math.floor((e.clientX-chessbrd.offsetLeft)/cellWidth);
+      const y=Math.abs(Math.ceil((e.clientY-chessbrd.offsetTop-boardWidth)/cellWidth));
+      
+      const currentPiece=pieces.find(p=>samePosition(p.position,grabPosition));
 
       if(currentPiece){
-        const validMove=referee.isValid(gridX,gridY,x,y,currentPiece.type,currentPiece.team,pieces);
+        const isEnpassantMove=referee.isEnpassant(grabPosition,{x,y},currentPiece.type,currentPiece.team,pieces);
+        const validMove=referee.isValid(grabPosition,{x,y},currentPiece.type,currentPiece.team,pieces);
 
-      if(validMove){
+        const pawndirection= (currentPiece.team===TeamType.own)? 1 : -1;
+
+        if(isEnpassantMove){
+          const updatedPieces=pieces.reduce((results,piece)=>{
+            if(samePosition(piece.position,grabPosition)){
+              piece.Enpassant=false;
+              piece.position.x=x;
+              piece.position.y=y;
+              results.push(piece);
+            }
+            else if(!samePosition(piece.position,{x,y:y-pawndirection})){
+              if(piece.type===PieceType.PAWN){
+                piece.Enpassant=false;
+              }
+              // console.log(piece);
+              
+              results.push(piece);
+            }
+
+            return results;
+          },[] as Piece[])
+          setPieces(updatedPieces);
+          
+        }
+      else if(validMove){
         const updatedPieces=pieces.reduce((results,piece)=>{
-          if(piece.x===currentPiece.x && piece.y===currentPiece.y){
-            piece.x=x;
-            piece.y=y;
+          if(samePosition(piece.position,grabPosition)){
+            if(Math.abs(grabPosition.y-y)===2 && piece.type===PieceType.PAWN){
+              piece.Enpassant=true;
+            
+            }else{
+              piece.Enpassant=false;
+            }
+            piece.position.x=x;
+            piece.position.y=y;
+             
+            let promotionRow=(piece.team===TeamType.own && piece.type===PieceType.PAWN)? 7 : 0;
+            if(y===promotionRow){
+              modalRef.current?.classList.remove("hidden");
+              setPromotionPawn(piece);
+            }
+            
             results.push(piece);
-          }else if(!(piece.x===x && piece.y===y)){
+            // console.log(piece.position.x,piece.position.y,piece.image,piece.Enpassant);
+          }else if(!samePosition(piece.position,{x,y})){
+            // if(piece.type===PieceType.PAWN){
+              // piece.Enpassant=false;
+            // }
             results.push(piece);
           }
            
@@ -154,22 +142,58 @@ export default function Board() {
         setPieces(updatedPieces);
     }else{
       activeElement.style.position="relative";
-      activeElement.style.removeProperty('top');
-      activeElement.style.removeProperty('left');
+      activeElement.style.removeProperty("top");
+      activeElement.style.removeProperty("left");
     }
   }
 
       setActiveElemet(null);
     }
   }
+
+  function promotePawn(pieceType:PieceType){
+    if(promotionPawn===undefined) return;
+
+    const updatedPieces=pieces.reduce((result,piece)=>{
+      if(samePosition(piece.position,promotionPawn.position)){
+        piece.type=pieceType;
+        let team=(promotionPawn.team===TeamType.own) ? "w": "b";
+        let img;
+        switch(pieceType){
+          case PieceType.BISHOP :
+            img="bishop";
+            break;
+          case PieceType.KNIGHT:
+            img="knight";
+            break;
+          case PieceType.ROOK:
+            img="rook";
+            break;
+          case PieceType.QUEEN:
+            img="queen";
+            break;
+        }
+        piece.image=`assets/images/${img}_${team}.png`;
+        modalRef.current?.classList.add("hidden");
+      }
+      result.push(piece);
+      return result;
+    },[] as Piece[]);
+    setPieces(updatedPieces);
+  }
+
+  function promotionPieceColor(){
+    return (promotionPawn?.team===TeamType.own)? "w" : "b";
+  }
+
   let board=[];
     for(let j=vertical.length-1;j>=0;j--){
         for(let i=0;i<horizontal.length;i++){
             let s=i+j;
 
           let image=undefined;
-          piece.forEach((p)=>{
-            if(p.x==i && p.y==j){
+          pieces.forEach((p)=>{
+            if(samePosition(p.position,{x:i,y:j})){
               image=p.image;
             }
           });
@@ -178,7 +202,17 @@ export default function Board() {
     }
 
   return (
+    <>
+    <div id="pawn-promotion" className='hidden' ref={modalRef}>
+        <div className="modal-body">
+            <img onClick={()=>promotePawn(PieceType.ROOK)} src={`assets/images/rook_${promotionPieceColor()}.png`}></img>
+            <img onClick={()=>promotePawn(PieceType.KNIGHT)} src={`assets/images/knight_${promotionPieceColor()}.png`}></img>
+            <img onClick={()=>promotePawn(PieceType.BISHOP)} src={`assets/images/bishop_${promotionPieceColor()}.png`}></img>
+            <img onClick={()=>promotePawn(PieceType.QUEEN)} src={`assets/images/queen_${promotionPieceColor()}.png`}></img>
+        </div>
+    </div>
     <div id='board' ref={chessBoardRef} onMouseUp={e=>dropPiece(e)} onMouseMove={e=>movePiece(e)} onMouseDown={e=>grabPiece(e)}>{board}
     </div>
+    </>
   );
 }
